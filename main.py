@@ -71,6 +71,20 @@ class BashTutor:
                     "# Creates empty file 'document.txt' in current directory\n# No output is shown if successful"
                 ),
 
+                "How do you list all text files in current directory?": Command(
+                    "ls *.txt",
+                    "Lists all files ending in .txt using the * wildcard. The * matches any number of any characters before '.txt'",
+                    "ls *.txt  # List all .txt files\nls test*.txt  # List .txt files starting with 'test'\nls *2023*.txt  # List .txt files containing '2023'",
+                    "notes.txt\nreadme.txt\ntest.txt\ntodo.txt"
+                ),
+
+                "How do you copy from a parallel directory to your current directory?": Command(
+                    "cp ../parallel_dir/* ./",
+                    "Copies files from a directory at the same level using relative paths. '../' means up one directory, './' means current directory",
+                    "cp ../project1/*.txt ./  # Copy all txt files from parallel directory\ncp ../old_project/config.json ./  # Copy specific file\ncp -r ../source_code/ ./  # Copy entire directory recursively",
+                    "# No output shown if successful\n# Contents from ../parallel_dir/ appear in current directory"
+                ),
+
                 "What command can you use to locally compress and backup a project with date?": Command(
                     "tar -czvf project_backup_$DATE.tar.gz project_folder/",
                     "Makes a compressed archieve of the project folder with the current date in the filename",
@@ -343,6 +357,76 @@ class BashTutor:
                     "Shows all TCP and UDP listening ports (-t TCP, -u UDP, -l listening, -n show numbers)",
                     "netstat -tuln\nnetstat -tulnp  # Also show process name (requires sudo)",
                     "Proto Recv-Q Send-Q Local Address           Foreign Address         State\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN\ntcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN"
+                ),
+
+                "How do you sync directories while excluding certain files?": Command(
+                    "rsync -av --exclude='pattern' source/ destination/",
+                    "Synchronizes directories while excluding specified patterns. The -a preserves attributes, -v shows progress.",
+                    "rsync -av --exclude='.git' --exclude='*.log' src/ dest/  # Exclude multiple patterns\nrsync -av --exclude-from='exclude.txt' src/ dest/  # Exclude from file",
+                    "sending incremental file list\nfile1.txt\nfile2.txt\nsubdir/\nsubdir/file3.txt\n\nsent 1,234 bytes  received 42 bytes  2,552.00 bytes/sec\ntotal size is 10,340  speedup is 8.12"
+                ),
+
+                "How do you sync directories while showing progress?": Command(
+                    "rsync -avP source/ destination/",
+                    "Synchronizes with progress bar (-P) and verbose output. Useful for large transfers.",
+                    "rsync -avP ~/Documents/ backup/  # Sync with progress\nrsync -avP --info=progress2 src/ dest/  # Detailed progress",
+                    "sending incremental file list\nfile.txt\n    1,234,567 100%   23.45MB/s    0:00:01\ntotal size is 1,234,567  speedup is 1.00"
+                ),
+
+                "How do you do a dry run of directory synchronization?": Command(
+                    "rsync -av --dry-run source/ destination/",
+                    "Shows what would be transferred without actually copying files. Good for testing.",
+                    "rsync -av --dry-run ~/src/ ~/backup/  # Test sync\nrsync -avn src/ dest/  # Short form",
+                    "sending incremental file list\nfile1.txt\nfile2.txt\n\nNOTE: would transfer 123 bytes in 2 files"
+                ),
+
+                "How do you create a mirror backup of a directory?": Command(
+                    "rsync -av --delete source/ destination/",
+                    "Creates exact mirror, deleting files in destination that don't exist in source.",
+                    "rsync -av --delete ~/www/ backup/  # Mirror website\nrsync -av --delete --backup src/ dest/  # Mirror with backups",
+                    "deleting old_file.txt\nsending incremental file list\nnew_file.txt"
+                ),
+
+                "How do you sync files while preserving hard links?": Command(
+                    "rsync -avH source/ destination/",
+                    "Preserves hard links (-H) during synchronization. Useful for backup systems.",
+                    "rsync -avH /etc/ backup/  # Sync preserving hard links\nrsync -avHAX root/ backup/  # Full system backup",
+                    "sending incremental file list\nfile1.txt => file2.txt\nfile3.txt"
+                ),
+
+                "How do you use tar with ssh for remote backup?": Command(
+                    "tar czf - directory | ssh user@host 'cat > backup.tar.gz'",
+                    "Creates compressed archive and sends it directly to remote host via SSH.",
+                    "tar czf - Documents | ssh server 'cat > docs.tar.gz'  # Backup to server\ntar czf - /etc | ssh user@host 'cd /backup && cat > etc.tar.gz'  # Backup to specific directory",
+                    "tar: Documents: Removing leading '/' from member names\n# Data transfers without local storage"
+                ),
+
+                "How do you use dd to clone a disk?": Command(
+                    "dd if=/dev/sda of=/dev/sdb bs=4M status=progress",
+                    "Creates exact disk copy, useful for disk cloning and backup. Be very careful with this command.",
+                    "dd if=/dev/sda of=disk.img bs=4M  # Create disk image\ndd if=/dev/zero of=/dev/sdb bs=4M  # Wipe disk",
+                    "1234567+0 records in\n1234567+0 records out\n1234567890123 bytes transferred in 123.45 seconds (123.45 MB/s)"
+                ),
+
+                "How do you create a compressed file archive?": Command(
+                    "tar czvf archive.tar.gz files/",
+                    "Creates a compressed tar archive (-c create, -z gzip, -v verbose, -f specify file).",
+                    "tar czvf backup.tar.gz ~/Documents/  # Backup Documents\ntar czvf --exclude='*.tmp' archive.tar.gz dir/  # Exclude patterns",
+                    "dir/\ndir/file1.txt\ndir/file2.txt\ndir/subdir/\ndir/subdir/file3.txt"
+                ),
+
+                "How do you synchronize only newer files?": Command(
+                    "rsync -avu source/ destination/",
+                    "Updates only files that are newer in source (-u update only).",
+                    "rsync -avu ~/src/ ~/backup/  # Update newer files\nrsync -avu --ignore-existing src/ dest/  # Skip existing",
+                    "sending incremental file list\nnew_file.txt\nmodified_file.txt"
+                ),
+
+                "How do you create an incremental backup?": Command(
+                    "rsync -av --link-dest=previous_backup source/ new_backup/",
+                    "Creates hard links to unchanged files from previous backup, saving space.",
+                    "rsync -av --link-dest=/backup/last /src/ /backup/new/  # Incremental backup\nrsync -av --link-dest=../backup.1 src/ backup.0/  # Rotating backup",
+                    "sending incremental file list\nfile1.txt\nfile2.txt -> ../backup.1/file2.txt"
                 )                
             },
             Mode.ADVANCED: {
